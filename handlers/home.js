@@ -29,7 +29,7 @@ module.exports = (req, res) => {
 
         let queryData = qs.parse(url.parse(req.url).query)
 
-        let products = database.products.getAll()
+        let products = database.products.getProducts()
         if (queryData.query) {
           products = products.filter((p) => {
             return p.name.toLowerCase().indexOf(queryData.query.toLowerCase()) > -1
