@@ -139,8 +139,8 @@ textarea.input-field {
 
 .product-img {
   width: 100%;
-  max-width: 350px;
-  max-height: 350px;
+  max-width: 320px;
+  max-height: 150px;
 }
 
 .cards {
@@ -185,4 +185,26 @@ textarea.input-field {
 
 footer {
   padding: 15px;
+}
+
+.thumbnail {
+  margin-top: 20px
+}
+
+#image {
+  display: inline-block
+}
+
+.form-control {
+  width: 25%;
+  display: inline-block;
+  height: 40px;
+  margin: 5px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.alert {
+  max-width: 33%;
+  margin: 0 auto
 }

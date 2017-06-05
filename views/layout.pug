@@ -1,0 +1,36 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    meta(http-equiv='X-UA-Compatible', content='ie=edge')
+    title ShopStop
+    link(rel='icon', type='image/x-icon', href='/content/images/favicon.ico')
+    // Latest compiled and minified CSS
+    link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css', integrity='sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u', crossorigin='anonymous')
+    link(rel='stylesheet', type='text/css', href='/content/styles/site.css')
+    
+  body
+    header
+      nav.nav
+        ul
+          li
+            a(href='/') Home Page
+          li
+            a(href='/product/add') Add Product
+          li
+            a(href='/category/add') Add Category
+          li.delimeter
+          li.align-right
+            a(href='/user/register') Register
+          li.align-right
+            a(href='/user/login') Login
+    if error
+      .alert.alert-danger.text-center(role="alert")= error
+    else if success
+      .alert.alert-success.text-center(role="alert")= success
+    
+    main.container
+    block content
+    footer
+      p &copy;ShopStop

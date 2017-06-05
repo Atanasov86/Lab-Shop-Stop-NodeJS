@@ -1,61 +1,24 @@
-const url = require('url')
-const fs = require('fs')
-const path = require('path')
-const database = require('../config/database.config')
-const qs = require('querystring')
-
 const Product = require('../models/Product')
 
-module.exports = (req, res) => {
-  req.pathname = req.pathname || url.parse(req.url).pathname
+module.exports.index = (req, res) => {
+  let queryData = req.query
 
-  if (req.pathname === '/' && req.method === 'GET') {
-    let filePath = path.normalize(
-      path.join(__dirname, '../views/home/index.html')
-    )
+  Product.find().populate('category')
+      .then((products) => {
+        if (queryData.query) {
+          products = products.filter(
+            p => p.name.toLowerCase().includes(queryData.query)
+          )
+        }
 
-    fs.readFile(filePath, (err, data) => {
-      if (err) {
-        console.log(err)
-        res.writeHead(404, {
-          'Content-Type': 'text/plain'
-        })
+        let data = {products: products}
 
-        res.write('404 NOT FOUND!')
-        res.end()
-        return
-      } else {
-        let queryData = qs.parse(url.parse(req.url).query)
+        if (req.query.error) {
+          data.error = req.query.error
+        } else if (req.query.success) {
+          data.success = req.query.success
+        }
 
-        Product.find()
-          .then((products) => {
-            if (queryData.query) {
-              products = products.filter(
-                p => p.name.toLowerCase().includes(queryData.query)
-              )
-            }
-
-            let content = ''
-
-            for (let product of products) {
-              content +=
-                  `<div class="product-card">
-                    <img class="product-img" src="${product.image}">
-                    <h2>${product.name}</h2>
-                    <p>${product.description}</p>
-                  </div>`
-            }
-
-            res.writeHead(200, {
-              'Content-Type': 'text/html'
-            })
-            let html = data.toString().replace('{content}', content)
-            res.write(html)
-            res.end()
-          })
-      }
-    })
-  } else {
-    return true
-  }
+        res.render('home/index', data)
+      })
 }

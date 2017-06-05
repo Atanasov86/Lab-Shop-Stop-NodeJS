@@ -1,99 +1,141 @@
-const url = require('url')
-const fs = require('fs')
-const path = require('path')
-const multiparty = require('multiparty')
-const shortid = require('shortid')
 const Product = require('../models/Product')
 const Category = require('../models/Category')
+const fs = require('fs')
+const path = require('path')
 
-module.exports = (req, res) => {
-  req.pathname = req.pathname || url.parse(req.url).pathname
+module.exports.addGet = (req, res) => {
+  Category.find().then((categories) => {
+    res.render('products/add', {categories: categories})
+  })
+}
 
-  if (req.pathname === '/product/add' && req.method === 'GET') {
-    let filePath = path.normalize(path.join(__dirname, '../views/product/add.html'))
-    fs.readFile(filePath, (err, data) => {
-      if (err) {
-        console.log(err)
+module.exports.addPost = (req, res) => {
+  let productObj = req.body
+  if (req.file) {
+    productObj.image = '\\' + req.file.path
+  }
+
+  Product.create(productObj).then((product) => {
+    Category.findById(product.category).then((category) => {
+      category.products.push(product._id)
+      category.save()
+    })
+    res.redirect('/')
+  })
+}
+
+module.exports.editGet = (req, res) => {
+  let id = req.params.id
+  Product.findById(id)
+    .then(product => {
+      if (!product) {
+        res.sendStatus(404)
+        return
       }
 
       Category.find()
         .then((categories) => {
-          let replacement = '<select class="input-field" name="category">'
-          for (let category of categories) {
-            let option = `<option value="${category._id}">${category.name}</option>`
-            replacement += option
-          }
-
-          replacement += '</select>'
-
-          let html = data.toString().replace('{categories}', replacement)
-          res.writeHead(200, {
-            'Content-Type': 'text/html'
+          res.render('products/edit', {
+            product: product,
+            categories: categories
           })
-          res.write(html)
-          res.end()
         })
     })
-  } else if (req.pathname === '/product/add' && req.method === 'POST') {
-    let form = new multiparty.Form()
-    let product = {}
+}
 
-    form.on('part', (part) => {
-      if (part.filename) {
-        let dataString = ''
+module.exports.editPost = (req, res) => {
+  let id = req.params.id
+  let editedProduct = req.body
 
-        let fileExtension = path.extname(part.filename)
-        part.setEncoding('binary')
+  Product.findById(id)
+    .then((product) => {
+      if (!product) {
+        res.redirect(`/?error=${encodeURIComponent('error=Product was not found')}`)  
+      }
 
-        part.on('data', (data) => {
-          dataString += data
-        })
+      product.name = editedProduct.name
+      product.description = editedProduct.description
+      product.price = editedProduct.price
 
-        part.on('end', () => {
-          let fileName = shortid.generate()
-          let filePath = `/content/images/${fileName}${fileExtension}`
-          product.image = filePath
-          fs.writeFile(`./${filePath}`, dataString, {encoding: 'ascii'}, (err) => {
-            if (err) {
-              console.log(err)
-            }
+      if (req.file) {
+        product.image = '\\' + req.file.path
+      }
+
+      // checked whether category is changed
+      if (product.category.toString() !== editedProduct.category) {
+        Category.findById(product.category)
+          .then((currentCategory) => {
+            Category.findById(editedProduct.category)
+              .then((nextCategory) => {
+                let index = currentCategory.products.indexOf(product._id)
+                console.log(index)
+                if (index >= 0) {
+                  // remove old category reference from list of products
+                  currentCategory.products.splice(index, 1)
+                }
+
+                currentCategory.save()
+
+                // add new category reference to list of products
+                nextCategory.products.push(product._id)
+                nextCategory.save()
+
+                product.category = editedProduct.category
+
+                product.save()
+                  .then(() => {
+                    res.redirect('/?success=' + encodeURIComponent('Product was successfully edited!!!'))
+                  })
+              })
           })
-        })
       } else {
-        part.setEncoding('utf-8')
-        let field = ''
-        part.on('data', (data) => {
-          field += data
-        })
-
-        part.on('end', () => {
-          product[part.name] = field
-        })
+        product.save()
+          .then(() => {
+            res.redirect('/?success=' + encodeURIComponent('Product was successfully edited!!!'))
+          })
       }
     })
+}
 
-    form.on('close', () => {
-      Product.create(product)
-        .then((insertedProduct) => {
-          Category.findById(product.category)
-            .then((category) => {
-              category.products.push(insertedProduct._id)
-              category.save()
-              res.writeHead(302, {
-                Location: '/'
-              })
-              res.end()
-            })
-            .catch((err) => {
-              console.log(err)
-            })
-        })
-        .catch((err) => {
-          console.log(err)
-        })
+module.exports.deleteGet = (req, res) => {
+  let id = req.params.id
+
+  Product.findById(id)
+    .then((product) => {
+      res.render('products/delete', {product: product})
     })
-    form.parse(req)
-  } else {
-    return true
-  }
+}
+
+module.exports.deletePost = (req, res) => {
+  let id = req.params.id
+
+  Product.findByIdAndRemove(id, (err, product) => {
+    if (err) {
+      console.log(err)
+      return
+    }
+
+    // delete product id from category products list
+    Category.findById(product.category)
+      .then((category) => {
+        let index = category.products.indexOf(product._id)
+        if (index >= 0) {
+          category.products.splice(index, 1)
+        }
+        let imagePath = 'F:\\SoftUni\\ExpressJS and NodeJS\\Lab-Shop-Stop-NodeJS' + product.image
+        console.log(imagePath)
+        fs.unlink(imagePath, (err) => {
+          if (err) {
+            console.log(err)
+            return
+          }
+
+          console.log(`successfully deleted ${product.image}`)
+        })
+        category.save()
+          .then(() => {
+            res.redirect('/?success=' + encodeURIComponent('Product was successfully removed!!!'))
+          })
+      })
+  })
 }
