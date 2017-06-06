@@ -1,0 +1,37 @@
+extends ../layout
+
+block content
+  .container
+    .row.centered-form
+      .col-xs-12.col-sm-8.col-md-4.col-sm-offset-2.col-md-offset-4
+        .panel.panel-default
+          .panel-heading
+            h3.text-center.panel-title Please sign up
+          .panel-body
+            form(method='post')
+              .row
+                .col-xs-6.col-sm-6.col-md-6
+                  .form-group
+                    input#firstName.form-control(type='text', name='firstName', placeholder='First Name' value=firstName)
+                .col-xs-6.col-sm-6.col-md-6
+                  .form-group
+                    input#lastName.form-control.input-sm(type='text', name='lastName', placeholder='Last Name' value=lastName)
+              .form-group
+                input#email.form-control.input-sm(type='text', name='username', placeholder='Username', value=username)
+              .row
+                .col-xs-6.col-sm-6.col-md-6
+                  .form-group
+                    input#password.form-control.input-sm(type='password', name='password', placeholder='Password')
+                .col-xs-6.col-sm-6.col-md-6
+                  .form-group
+                    input#password_confirmation.form-control.input-sm(type='password', name='confirmedPassword', placeholder='Confirm Password')
+              .row
+                .col-xs-6.col-sm-6.col-md-6
+                  .form-group
+                    input.form-control.input-sm(type='number', name='', placeholder='Enter your age' value=age)
+                .col-xs-6.col-sm-6.col-md-6
+                  .form-group
+                    select.form-control.input-sm(name='')
+                      option Male
+                      option Female
+              input.btn.btn-info.btn-block(type='submit', value='Register')

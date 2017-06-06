@@ -19,11 +19,17 @@ let productSchema = mongoose.Schema({
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category'
+    ref: 'Category',
+    required: true
   },
-  isBought: {
-    type: mongoose.Schema.Types.Boolean,
-    default: false
+  creator: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  buyer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }
 })
 

@@ -195,11 +195,11 @@ footer {
   display: inline-block
 }
 
-.form-control {
+.search {
   width: 25%;
   display: inline-block;
-  height: 40px;
   margin: 5px;
+  height: 40px;
   padding-top: 10px;
   padding-bottom: 10px;
 }
@@ -207,4 +207,13 @@ footer {
 .alert {
   max-width: 33%;
   margin: 0 auto
+}
+
+.centered-form{
+	margin-top: 60px;
+}
+
+.centered-form .panel{
+	background: rgba(255, 255, 255, 0.8);
+	box-shadow: rgba(0, 0, 0, 0.3) 20px 20px 20px;
 }
