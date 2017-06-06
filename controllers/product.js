@@ -50,7 +50,7 @@ module.exports.editPost = (req, res) => {
   Product.findById(id)
     .then((product) => {
       if (!product) {
-        res.redirect(`/?error=${encodeURIComponent('error=Product was not found')}`)  
+        res.redirect(`/?error=${encodeURIComponent('error=Product was not found')}`)
       }
 
       product.name = editedProduct.name
@@ -122,8 +122,8 @@ module.exports.deletePost = (req, res) => {
         if (index >= 0) {
           category.products.splice(index, 1)
         }
-        let imagePath = 'F:\\SoftUni\\ExpressJS and NodeJS\\Lab-Shop-Stop-NodeJS' + product.image
-        console.log(imagePath)
+
+        let imagePath = path.normalize(path.join(__dirname, `../${product.image}`))
         fs.unlink(imagePath, (err) => {
           if (err) {
             console.log(err)
@@ -138,4 +138,12 @@ module.exports.deletePost = (req, res) => {
           })
       })
   })
+}
+
+module.exports.buyGet = (req, res) => {
+  let id = req.params.id
+  Product.findById(id)
+    .then((product) => {
+      res.render('products/buy', {product: product})
+    })
 }

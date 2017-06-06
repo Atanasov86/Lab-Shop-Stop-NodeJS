@@ -1,4 +1,4 @@
-const handlers = require('../handlers')
+const handlers = require('../controllers')
 const multer = require('multer')
 
 let upload = multer({dest: './content/images'})
@@ -14,6 +14,8 @@ module.exports = (app) => {
 
   app.get('/product/delete/:id', handlers.product.deleteGet)
   app.post('/product/delete/:id', handlers.product.deletePost)
+
+  app.get('/product/buy/:id', handlers.product.buyGet)
 
   app.get('/category/add', handlers.category.addGet)
   app.post('/category/add', handlers.category.addPost)
