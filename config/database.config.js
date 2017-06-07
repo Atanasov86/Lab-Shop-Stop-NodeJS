@@ -11,7 +11,7 @@ module.exports = (config) => {
       console.log(err)
       return
     }
-    console.log('Connected')
+    console.log('Mongo Connected')
   })
 
   database.on('error', (err) => {
