@@ -3,7 +3,7 @@ const Product = require('../models/Product')
 module.exports.index = (req, res) => {
   let queryData = req.query
 
-  Product.find().populate('category')
+  Product.find({buyer: null}).populate('category')
       .then((products) => {
         if (queryData.query) {
           products = products.filter(

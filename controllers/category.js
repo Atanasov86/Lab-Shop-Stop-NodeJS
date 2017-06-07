@@ -6,8 +6,12 @@ module.exports.addGet = (req, res) => {
 
 module.exports.addPost = (req, res) => {
   let category = req.body
-  Category.create(category).then(() => {
-    res.redirect('/')
+  category.creator = req.user._id
+  Category.create(category).then((category) => {
+    req.user.createdCategories.push(category._id)
+    req.user.save(() => {
+      res.redirect('/')
+    })
   })
 }
 
@@ -15,7 +19,6 @@ module.exports.getProductsByCategory = (req, res) => {
   let categoryName = req.params.category
   Category.findOne({name: categoryName}).populate('products')
     .then((category) => {
-      console.log(category)
       if (!category) {
         res.sendStatus(404)
         return

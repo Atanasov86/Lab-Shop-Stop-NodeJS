@@ -15,31 +15,40 @@ module.exports.addPost = (req, res) => {
     productObj.image = '\\' + req.file.path
   }
 
+  productObj.creator = req.user._id
+
   Product.create(productObj).then((product) => {
     Category.findById(product.category).then((category) => {
       category.products.push(product._id)
       category.save()
     })
+
+    req.user.createdProducts.push(product._id)
+    req.user.save()
     res.redirect('/')
   })
 }
 
 module.exports.editGet = (req, res) => {
   let id = req.params.id
-  Product.findById(id)
+  Product.findById(id).where('buyer').equals(null)
     .then(product => {
       if (!product) {
         res.sendStatus(404)
         return
       }
 
-      Category.find()
+      if (product.creator.equals(req.user._id) || req.user.roles.indexOf('Admin') >= 0) {
+        Category.find()
         .then((categories) => {
           res.render('products/edit', {
             product: product,
             categories: categories
           })
         })
+      } else {
+        res.redirect(`/?error=${encodeURIComponent('You not authorized to edit this product.')}`)
+      }
     })
 }
 
@@ -47,10 +56,10 @@ module.exports.editPost = (req, res) => {
   let id = req.params.id
   let editedProduct = req.body
 
-  Product.findById(id)
+  Product.findById(id).where('buyer').equals(null)
     .then((product) => {
       if (!product) {
-        res.redirect(`/?error=${encodeURIComponent('error=Product was not found')}`)
+        res.redirect(`/?error=${encodeURIComponent('Product was not found')}`)
       }
 
       product.name = editedProduct.name
@@ -68,7 +77,6 @@ module.exports.editPost = (req, res) => {
             Category.findById(editedProduct.category)
               .then((nextCategory) => {
                 let index = currentCategory.products.indexOf(product._id)
-                console.log(index)
                 if (index >= 0) {
                   // remove old category reference from list of products
                   currentCategory.products.splice(index, 1)
@@ -100,9 +108,13 @@ module.exports.editPost = (req, res) => {
 module.exports.deleteGet = (req, res) => {
   let id = req.params.id
 
-  Product.findById(id)
+  Product.findById(id).where('buyer').equals(null)
     .then((product) => {
-      res.render('products/delete', {product: product})
+      if (product.creator.equals(req.user._id) || req.user.roles.indexOf('Admin') >= 0) {
+        res.render('products/delete', {product: product})
+      } else {
+        res.redirect(`/?error=${encodeURIComponent('You not authorized to delete this product.')}`)
+      }
     })
 }
 
@@ -153,11 +165,6 @@ module.exports.buyPost = (req, res) => {
 
   Product.findById(productId)
     .then(product => {
-      if (!req.user) {
-        res.render('user/login', {error: 'Before buy product you must login.'})
-        return
-      }
-
       if (product.buyer) {
         let error = `error=${encodeURIComponent('Product was already bought!')}`
         res.redirect(`/?${error}`)
